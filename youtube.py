@@ -9,7 +9,7 @@ from tqdm import tqdm
 import yt_dlp
 
 # --- Defaults ---
-DEFAULT_DOWNLOAD_PATH = 'downloads/%(playlist_title|channel)s/%(upload_date)s - %(title)s [%(id)s].%(ext)s'
+DEFAULT_DOWNLOAD_PATH = 'downloads/%(channel)s/%(upload_date)s - %(title)s [%(id)s].%(ext)s'
 DEFAULT_FILENAME_SUFFIX = "Processed"
 DEFAULT_LOG_FILE = 'downloader.log'
 DEFAULT_DOWNLOAD_ARCHIVE = 'downloaded.txt'
@@ -24,6 +24,7 @@ DEFAULT_PRESET = 'slow'
 DEFAULT_PROCESS_MODE = 'encode'
 DEFAULT_AUDIO_CODEC_MODE = 'encode'
 
+
 # --- Logging ---
 def setup_logging(log_file):
     logging.basicConfig(
@@ -35,10 +36,12 @@ def setup_logging(log_file):
         ]
     )
 
+
 # --- Helpers ---
 def sanitize_filename(name):
     """Remove invalid characters from filename."""
     return re.sub(r'[\\/*?:"<>|]', "_", name)
+
 
 def sanitize_info(info):
     """Sanitize metadata fields before yt-dlp writes files."""
@@ -47,9 +50,13 @@ def sanitize_info(info):
             info[key] = sanitize_filename(info[key])
     return info
 
+
 # --- CLI Parser ---
 def create_arg_parser():
-    parser = argparse.ArgumentParser(description="Advanced YouTube Downloader and Processor", formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description="Advanced YouTube Downloader and Processor",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument('url_or_identifier', help="Channel URL, channel ID, or playlist URL.")
     
     group_path = parser.add_argument_group('Paths and Archive Options')
@@ -80,6 +87,7 @@ def create_arg_parser():
     
     return parser
 
+
 # --- Main Class ---
 class YoutubeDownloader:
     def __init__(self, args):
@@ -101,10 +109,24 @@ class YoutubeDownloader:
         self.processed_archive.add(filename)
 
     def _get_valid_url(self, identifier):
-        if 'playlist?list=' in identifier or 'watch?v=' in identifier: return identifier
-        if identifier.startswith('@'): return f"https://www.youtube.com/{identifier}/videos"
-        if identifier.startswith('UC' ): return f"https://www.youtube.com/channel/{identifier}/videos"
-        if identifier.startswith('https://' ): return identifier
+        if 'playlist?list=' in identifier or 'watch?v=' in identifier:
+            return [identifier]
+
+        if identifier.startswith('@'):
+            return [
+                f"https://www.youtube.com/{identifier}/videos",
+                f"https://www.youtube.com/{identifier}/shorts"
+            ]
+
+        if identifier.startswith('UC'):
+            return [
+                f"https://www.youtube.com/channel/{identifier}/videos",
+                f"https://www.youtube.com/channel/{identifier}/shorts"
+            ]
+
+        if identifier.startswith('https://'):
+            return [identifier]
+
         logging.error("Invalid identifier or URL.")
         sys.exit(1)
 
@@ -118,7 +140,7 @@ class YoutubeDownloader:
                 self.tqdm_progress_bars[file_id] = tqdm(
                     total=d.get('total_bytes') or d.get('total_bytes_estimate'),
                     unit='B', unit_scale=True, unit_divisor=1024,
-                    desc=f"📥 {title[:25]}...", bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]'
+                    desc=f"{title[:25]}...", bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]'
                 )
             pbar = self.tqdm_progress_bars[file_id]
             downloaded = d.get('downloaded_bytes', 0)
@@ -132,17 +154,17 @@ class YoutubeDownloader:
             final_filepath = d.get('filename')
             if not final_filepath: return
             
-            logging.info(f"✅ Finished downloading: {os.path.basename(final_filepath)}")
+            logging.info(f"Finished downloading: {os.path.basename(final_filepath)}")
 
             if not self.args.skip_processing:
                 if final_filepath not in self.processed_archive:
                     self.files_to_process.append(final_filepath)
                 else:
-                    logging.info(f"⏩ Skipping processing (already processed): {os.path.basename(final_filepath)}")
+                    logging.info(f"Skipping processing (already processed): {os.path.basename(final_filepath)}")
 
     def download_content(self):
-        target_url = self._get_valid_url(self.args.url_or_identifier)
-        logging.info(f"📥 Starting download from: {target_url}")
+        target_urls = self._get_valid_url(self.args.url_or_identifier)
+        logging.info(f"Starting download from: {target_urls}")
         
         ydl_opts = {
             'outtmpl': self.args.output_path,
@@ -158,24 +180,24 @@ class YoutubeDownloader:
         }
 
         if self.args.audio_only:
-            logging.info(f"🎧 Audio-only mode -> {self.args.audio_format} @ {self.args.audio_bitrate}k")
+            logging.info(f"Audio-only mode -> {self.args.audio_format} @ {self.args.audio_bitrate}k")
             ydl_opts['format'] = 'bestaudio/best'
             ydl_opts['postprocessors'] = [{'key': 'FFmpegExtractAudio', 'preferredcodec': self.args.audio_format}]
             ydl_opts['postprocessor_args'] = ['-b:a', f"{self.args.audio_bitrate}k"]
         else:
-            logging.info(f"🎬 Video mode -> up to {self.args.quality}p")
+            logging.info(f"Video mode -> up to {self.args.quality}p")
             quality_filter = self.args.quality.replace('p', '')
             ydl_opts['format'] = f"bv*[height<={quality_filter}][ext=mp4]+ba[ext=m4a]/b[ext=mp4]/best"
             ydl_opts['merge_output_format'] = 'mp4'
             if self.args.subtitles:
-                logging.info(f"🌐 Embedding subtitles: {self.args.sub_langs}")
+                logging.info(f"Embedding subtitles: {self.args.sub_langs}")
                 ydl_opts['writesubtitles'] = True
                 ydl_opts['subtitleslangs'] = self.args.sub_langs.split(',')
                 ydl_opts['embedsubtitles'] = True
 
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([target_url])
+                ydl.download(target_urls)
         except Exception as e:
             logging.error(f"Fatal download error: {e}")
 
@@ -184,7 +206,7 @@ class YoutubeDownloader:
             logging.info("No new videos to process.")
             return
 
-        logging.info(f"🎬 Processing {len(self.files_to_process)} videos in '{self.args.process_mode}' mode...")
+        logging.info(f"Processing {len(self.files_to_process)} videos in '{self.args.process_mode}' mode...")
         
         with ThreadPoolExecutor(max_workers=self.args.max_workers) as executor:
             with tqdm(total=len(self.files_to_process), desc="Processing videos") as pbar:
@@ -216,21 +238,21 @@ class YoutubeDownloader:
                 if not self.args.keep_original:
                     os.remove(filename)
                 self._save_to_processed_archive(output_file)
-                return f"✨ Processed and saved: {os.path.basename(output_file)}"
+                return f"Processed and saved: {os.path.basename(output_file)}"
             else:
-                return f"❌ Processing failed for: {os.path.basename(filename)}. Original kept."
+                return f"Processing failed for: {os.path.basename(filename)}. Original kept."
 
         except subprocess.CalledProcessError as e:
-            return f"❌ FFmpeg error while processing {os.path.basename(filename)}: {e}"
+            return f"FFmpeg error while processing {os.path.basename(filename)}: {e}"
         except Exception as e:
-            return f"❌ Unexpected error while processing {os.path.basename(filename)}: {e}"
+            return f"Unexpected error while processing {os.path.basename(filename)}: {e}"
 
     def process_audio_files_concurrently(self):
         if not self.files_to_process:
             logging.info("No new audio files to process.")
             return
         
-        logging.info(f"🎵 Processing {len(self.files_to_process)} audio files (rename only)...")
+        logging.info(f"Processing {len(self.files_to_process)} audio files (rename only)...")
         for filepath in tqdm(self.files_to_process, desc="Processing audio"):
             base, ext = os.path.splitext(filepath)
             if not base.endswith(self.args.filename_suffix):
@@ -238,9 +260,10 @@ class YoutubeDownloader:
                 try:
                     os.rename(filepath, new_filepath)
                     self._save_to_processed_archive(new_filepath)
-                    logging.info(f"🎵 Renamed: {os.path.basename(new_filepath)}")
+                    logging.info(f"Renamed: {os.path.basename(new_filepath)}")
                 except OSError as e:
-                    logging.error(f"❌ Failed to rename {os.path.basename(filepath)}: {e}")
+                    logging.error(f"Failed to rename {os.path.basename(filepath)}: {e}")
+
 
 # --- Main ---
 def main():
@@ -262,7 +285,8 @@ def main():
         else:
             downloader.process_videos_concurrently()
     
-    logging.info("🎉 All operations completed successfully.")
+    logging.info("All operations completed successfully.")
+
 
 if __name__ == '__main__':
     main()
