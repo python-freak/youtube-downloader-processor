@@ -5,7 +5,7 @@ Built with **Python**, **yt-dlp**, and **ffmpeg**, it gives you fine-grained con
 
 ---
 
-## ✨ Features
+## Features
 
 - **Multiple Content Sources**: Download from channels (`@name` or `UC...` ID), videos, and playlists.
 - **Video & Audio Modes**: Download full videos or audio-only tracks.
@@ -25,7 +25,7 @@ Built with **Python**, **yt-dlp**, and **ffmpeg**, it gives you fine-grained con
 
 ---
 
-## 📦 Installation
+## Installation
 
 1. **Clone the repository**:
    ```bash
@@ -44,7 +44,7 @@ Built with **Python**, **yt-dlp**, and **ffmpeg**, it gives you fine-grained con
 
 ---
 
-## ▶️ Usage
+## Usage
 
 ```bash
 python downloader.py [URL_OR_IDENTIFIER] [OPTIONS]
@@ -52,7 +52,7 @@ python downloader.py [URL_OR_IDENTIFIER] [OPTIONS]
 
 ---
 
-## 🔥 Examples
+## Examples
 
 - **Download all videos from a channel (default: 1080p, re-encode):**
   ```bash
@@ -91,7 +91,7 @@ python downloader.py [URL_OR_IDENTIFIER] [OPTIONS]
 
 ---
 
-## ⚙️ Command-Line Options
+## Command-Line Options
 
 Run:
 ```bash
@@ -139,7 +139,7 @@ python youtube.py --help
 
 ---
 
-## 📜 License
+## License
 
 This project is licensed under the **MIT License**.  
 You are free to use, modify, and distribute it.
