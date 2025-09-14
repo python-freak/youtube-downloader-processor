@@ -54,7 +54,7 @@ python downloader.py [URL_OR_IDENTIFIER] [OPTIONS]
 
 ## Examples
 
-- **Download all videos from a channel (default: 1080p, re-encode):**
+- **Download all videos/shorts from a channel (default: 1080p, re-encode):**
   ```bash
   python downloader.py @MrBeast
   ```
