@@ -7,7 +7,7 @@ Built with **Python**, **yt-dlp**, and **ffmpeg**, it gives you fine-grained con
 
 ## Features
 
-- **Multiple Content Sources**: Download from channels (`@name` or `UC...` ID), videos, and playlists.
+- **Multiple Content Sources**: Download from channels (`@name` or `UC...` ID), videos, shorts, and playlists.
 - **Video & Audio Modes**: Download full videos or audio-only tracks.
 - **Quality Control**: Choose video resolution (e.g., `1080p`, `720p`) and audio bitrate.
 - **Flexible Processing**:
