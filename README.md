@@ -47,7 +47,7 @@ Built with **Python**, **yt-dlp**, and **ffmpeg**, it gives you fine-grained con
 ## Usage
 
 ```bash
-python downloader.py [URL_OR_IDENTIFIER] [OPTIONS]
+python youtube.py [URL_OR_IDENTIFIER] [OPTIONS]
 ```
 
 ---
@@ -56,37 +56,37 @@ python downloader.py [URL_OR_IDENTIFIER] [OPTIONS]
 
 - **Download all videos/shorts from a channel (default: 1080p, re-encode):**
   ```bash
-  python downloader.py @MrBeast
+  python youtube.py @MrBeast
   ```
 
 - **Download a playlist as audio-only MP3:**
   ```bash
-  python downloader.py "https://www.youtube.com/playlist?list=PL..." --audio-only --audio-format mp3
+  python youtube.py "https://www.youtube.com/playlist?list=PL..." --audio-only --audio-format mp3
   ```
 
 - **Download in 720p with subtitles (English + Arabic):**
   ```bash
-  python downloader.py @MKBHD --quality 720 --subtitles --sub-langs en,ar
+  python youtube.py @MKBHD --quality 720 --subtitles --sub-langs en,ar
   ```
 
 - **Lossless copy (no re-encode):**
   ```bash
-  python downloader.py "https://www.youtube.com/watch?v=..." --process-mode copy
+  python youtube.py "https://www.youtube.com/watch?v=..." --process-mode copy
   ```
 
 - **High compression re-encode (smaller, slower):**
   ```bash
-  python downloader.py "https://www.youtube.com/watch?v=..." --preset veryslow --crf 24
+  python youtube.py "https://www.youtube.com/watch?v=..." --preset veryslow --crf 24
   ```
 
 - **Re-encode video but keep original audio:**
   ```bash
-  python downloader.py "https://www.youtube.com/watch?v=..." --audio-codec copy
+  python youtube.py "https://www.youtube.com/watch?v=..." --audio-codec copy
   ```
 
 - **Keep original file after processing:**
   ```bash
-  python downloader.py @SomeChannel --keep-original
+  python youtube.py @SomeChannel --keep-original
   ```
 
 ---
