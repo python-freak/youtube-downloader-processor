@@ -187,7 +187,8 @@ class YoutubeDownloader:
         else:
             logging.info(f"Video mode -> up to {self.args.quality}p")
             quality_filter = self.args.quality.replace('p', '')
-            ydl_opts['format'] = f"bv*[height<={quality_filter}][ext=mp4]+ba[ext=m4a]/b[ext=mp4]/best"
+            # اجبار yt-dlp على دمج الفيديو والصوت
+            ydl_opts['format'] = f"bestvideo[height<={quality_filter}][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best"
             ydl_opts['merge_output_format'] = 'mp4'
             if self.args.subtitles:
                 logging.info(f"Embedding subtitles: {self.args.sub_langs}")
